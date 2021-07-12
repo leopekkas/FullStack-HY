@@ -2,9 +2,14 @@ import React, { useState } from 'react'
 
 const StatisticsLine = (props) => {
   return (
-    <div>
-      {props.text} {props.value}
-    </div>
+    <tr>
+      <td>
+        {props.text}
+      </td>
+      <td>
+        {props.value} {props.percent}
+      </td>
+    </tr>
   )  
 }
 
@@ -14,32 +19,22 @@ const Statistics = (props) => {
   let bad = props.bad
   let all = good + neutral + bad
   let average = (good - bad)/all
-  let positive = good/all
+  let positive = good/all * 100
 
   if (all === 0) {
     return <div>No feedback given</div>
   } else {
     return (
-      <div>
-        <tr> 
-          <td><StatisticsLine text="good" value={good} /></td>
-        </tr>
-        <tr>
-          <td><StatisticsLine text="neutral" value={neutral} /></td>
-        </tr>
-        <tr>
-          <td><StatisticsLine text="bad" value={bad} /></td>
-        </tr>
-        <tr>
-          <td><StatisticsLine text="all" value={all} /></td>
-        </tr>
-        <tr>
-          <td><StatisticsLine text="average" value={average} /></td>
-        </tr>
-        <tr>
-          <td><StatisticsLine text="positive" value={positive} /></td>
-        </tr>
-      </div>  
+      <table>
+        <tbody>
+          <StatisticsLine text="good" value={good} />
+          <StatisticsLine text="neutral" value={neutral} />
+          <StatisticsLine text="bad" value={bad} />
+          <StatisticsLine text="all" value={all} />
+          <StatisticsLine text="average" value={average} />
+          <StatisticsLine text="positive" value={positive} percent="%"/>
+        </tbody>  
+      </table>  
     )
   }
 }
