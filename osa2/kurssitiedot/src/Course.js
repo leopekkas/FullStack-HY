@@ -20,14 +20,31 @@ const Content = (props) => {
     )
 }
 
+const TotalExercises = (props) => {
+    return (
+        <div>
+            <b> 
+                total of {props.sum} exercises
+            </b>
+        </div>
+    )
+}
+
 const Course = (props) => {
     const header = props.course.name
     const parts = props.course.parts
+    const exercisetable = parts.map(part => 
+        part.exercises
+    )
 
+    const sum = exercisetable.reduce( (a, b) => {
+        return a + b
+    })
     return (
         <div>
             <Header header={header} />
             <Content parts={parts} />
+            <TotalExercises sum={sum} />
         </div>
     )
 }
