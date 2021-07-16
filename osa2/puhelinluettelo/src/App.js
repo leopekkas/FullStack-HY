@@ -69,6 +69,7 @@ const App = () => {
       .get('http://localhost:3001/persons')
       .then(response=> {
         setPersons(response.data)
+        setFiltered(response.data)
       })
   }, [])
 
@@ -82,10 +83,14 @@ const App = () => {
     if (nameList.includes(newName)) {
       window.alert(`${newName} is already added to phonebook`)
     } else {
-      setPersons(persons.concat(nameObject))
-      if (nameObject.name.toLowerCase().includes(newFilter.toLowerCase())) {
-        setFiltered(filtered.concat(nameObject))
-      }
+      axios
+        .post('http://localhost:3001/persons', nameObject)
+        .then(response => {
+          setPersons(persons.concat(nameObject))
+          if (nameObject.name.toLowerCase().includes(newFilter.toLowerCase())) {
+            setFiltered(filtered.concat(nameObject))
+          }
+        })
     }
     setNewName('')
     setNewNumber('')
@@ -106,7 +111,7 @@ const App = () => {
     } else {
       setNewFilter(event.target.value)
       const arr = persons.filter(person => 
-        person.name.toLowerCase().includes(newFilter.toLowerCase())
+        person.name.toLowerCase().includes(event.target.value.toLowerCase())
       )
       setFiltered(arr)
     }
