@@ -1,5 +1,14 @@
 import React, { useState, useEffect } from 'react'
-import axios from 'axios'
+import personService from './services/persons'
+
+const Button = (props) => {
+  const { handleClick, text } = props
+  return (
+    <button onClick={handleClick}>
+      {text}
+    </button>
+  )
+}
 
 const NewContact = (props) => {
   return (
@@ -46,8 +55,31 @@ const Numbers = (props) => {
     <div>
       <ul>
         {props.filtered.map(person => 
-          <li key={person.name}>{person.name} {person.number}</li>
+          <li key={person.id}>{person.name} {person.number}
+          <Button 
+            handleClick={() => {
+              const result = window.confirm("Delete " + person.name + "?")
+              if (result) {
+                personService
+                .remove(person.id)
+                .then(response => {
+                  personService
+                    .getAll()
+                    .then(response=> {
+                      props.setPersons(response.data)
+                      const arr = response.data.filter(person => 
+                        person.name.toLowerCase().includes(props.newFilter.toLowerCase())
+                      )
+                      props.setFiltered(arr)
+                    })
+                }) 
+              }
+            }}    
+            text='delete'
+          />
+          </li>  
         )}
+        
       </ul>
     </div>
   )
@@ -65,8 +97,8 @@ const App = () => {
   const [ filtered, setFiltered ] = useState(persons)
 
   useEffect(() => {
-    axios
-      .get('http://localhost:3001/persons')
+    personService
+      .getAll()
       .then(response=> {
         setPersons(response.data)
         setFiltered(response.data)
@@ -81,16 +113,32 @@ const App = () => {
     }
     
     if (nameList.includes(newName)) {
-      window.alert(`${newName} is already added to phonebook`)
+      const result = window.confirm(`${newName} is already added to phonebook, replace the old number with a new one?`)
+      if (result) {
+        const thisperson = persons.find(({name}) => name === newName)
+        const newNameObject = {
+          name: newName,
+          number: newNumber,
+          id: thisperson.id
+        }
+        console.log(newNameObject)
+        personService
+          .update(thisperson.id, newNameObject)
+            .then(returnedPerson => {
+            setPersons(persons.map(person => person.id !== thisperson.id ? person : returnedPerson.data))
+            setFiltered(persons.map(person => person.id !== thisperson.id ? person : returnedPerson.data))
+          })
+
+      }
     } else {
-      axios
-        .post('http://localhost:3001/persons', nameObject)
+      personService
+        .create(nameObject)
         .then(response => {
-          setPersons(persons.concat(nameObject))
+          setPersons(persons.concat(response.data))
           if (nameObject.name.toLowerCase().includes(newFilter.toLowerCase())) {
-            setFiltered(filtered.concat(nameObject))
+            setFiltered(filtered.concat(response.data))
           }
-        })
+        })  
     }
     setNewName('')
     setNewNumber('')
@@ -133,7 +181,12 @@ const App = () => {
 
       <h3>Numbers </h3>
 
-      <Numbers filtered={filtered}/>
+      <Numbers 
+        filtered={filtered}
+        setPersons={setPersons}
+        setFiltered={setFiltered}
+        newFilter={newFilter}
+      />
 
     </div>
   )
