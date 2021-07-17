@@ -1,6 +1,30 @@
 import React, { useState, useEffect } from 'react'
 import personService from './services/persons'
 
+const Notification = ({ message }) => {
+  if (message === null) {
+    return null
+  }
+
+  return (
+    <div className="error">
+      {message}
+    </div>
+  )
+}
+
+const GreenNotification = ({ message }) => {
+  if (message === null) {
+    return null
+  }
+
+  return (
+    <div className="greennotification">
+      {message}
+    </div>
+  )
+}
+
 const Button = (props) => {
   const { handleClick, text } = props
   return (
@@ -71,7 +95,20 @@ const Numbers = (props) => {
                         person.name.toLowerCase().includes(props.newFilter.toLowerCase())
                       )
                       props.setFiltered(arr)
+                      props.setGreenMessage("Deleted " + person.name)
+                      setTimeout(() => {
+                        props.setGreenMessage(null)
+                      }, 3000)
                     })
+                    .catch(error => {
+                      props.setErrorMessage(
+                        `Person '${person.name}' was already removed from server`
+                      )
+                      setTimeout(() => {
+                        props.setErrorMessage(null)
+                      }, 3000)
+                      props.setFiltered(person.filter(n => n.id !== person.id))
+                    })  
                 }) 
               }
             }}    
@@ -95,6 +132,9 @@ const App = () => {
   const [ newNumber, setNewNumber ] = useState('')
   const [ newFilter, setNewFilter ] = useState('')
   const [ filtered, setFiltered ] = useState(persons)
+
+  const [greenMessage, setGreenMessage] = useState(null)
+  const [errorMessage, setErrorMessage] = useState(null)
 
   useEffect(() => {
     personService
@@ -128,6 +168,10 @@ const App = () => {
             setPersons(persons.map(person => person.id !== thisperson.id ? person : returnedPerson.data))
             setFiltered(persons.map(person => person.id !== thisperson.id ? person : returnedPerson.data))
           })
+        setGreenMessage("Changed the number for " + thisperson.name)  
+        setTimeout(() => {
+          setGreenMessage(null)
+        }, 3000)  
 
       }
     } else {
@@ -138,7 +182,12 @@ const App = () => {
           if (nameObject.name.toLowerCase().includes(newFilter.toLowerCase())) {
             setFiltered(filtered.concat(response.data))
           }
-        })  
+        })
+      setGreenMessage("Added " + nameObject.name)  
+      setTimeout(() => {
+        setGreenMessage(null)
+      }, 3000)
+        
     }
     setNewName('')
     setNewNumber('')
@@ -170,6 +219,9 @@ const App = () => {
     <div>
       <h2>Phonebook</h2>
 
+      <Notification message={errorMessage} />
+      <GreenNotification message={greenMessage} />
+
       <Filter newFilter={newFilter} handleFilterChange={handleFilterChange}/>
 
       <h3>Add a new contact</h3>
@@ -186,6 +238,8 @@ const App = () => {
         setPersons={setPersons}
         setFiltered={setFiltered}
         newFilter={newFilter}
+        setErrorMessage={setErrorMessage}
+        setGreenMessage={setGreenMessage}
       />
 
     </div>
